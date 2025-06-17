@@ -21,8 +21,8 @@ async function runScraper() {
     console.log('Fetching sets dropdown to get sales for...')
     // const sets = await getSetsDropdown() -- FILTER DYNASTY,ECCELLENZA,LIGHTS OUT
     const sets = [ {
-        label: '2024 Topps Chrome Logofractor Formula 1',
-        value: '2024 Topps Chrome Logofractor Formula 1'
+        label: '2024 Topps Finest Formula 1',
+        value: '2024 Topps Finest Formula 1'
     } ]
     const SEARCH_TERMS = sets.map((set) => set.label)
     console.log('Sets retrieved!')
@@ -87,9 +87,31 @@ async function runScraper() {
             }
 
             // Check for a parallel
-            const allMatch = parallelMap.findLast(p => normTitle.includes(p.norm))?.name ?? parallelMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
-            const sapphireMatch = parallelMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
-            const matchedParallel = term.includes('Sapphire') || term.includes('Logofractor') ? sapphireMatch : allMatch
+            let matchedParallel = "Base"
+            if (term.includes('Finest')) {
+                // Filter the possible parallels by if the name contains 'auto' or 'relic'
+                let modifiedParallels = []
+                if (title.toLowerCase().includes('auto')) {
+                    modifiedParallels = possibleParallels.filter(parallel => parallel.name.toLowerCase().includes('auto'))
+                    // console.log('Auto modified parallels: ', modifiedParallels)
+                } else if (title.toLowerCase().includes('relic')) {
+                    modifiedParallels = possibleParallels.filter(parallel => parallel.name.toLowerCase().includes('relic'))
+                    // console.log('Relic modified parallels: ', modifiedParallels)
+                } else if (!title.toLowerCase().includes('common') && !title.toLowerCase().includes('uncommon') && !title.toLowerCase().includes('rare')) {
+                    modifiedParallels = possibleParallels.filter(parallel => parallel.name.toLowerCase().includes('insert') || parallel.name.toLowerCase().includes('checkerboard'))
+                    // console.log('Insert modified parallels: ', modifiedParallels)
+                } else {
+                    modifiedParallels = possibleParallels.filter(parallel => !parallel.name.toLowerCase().includes('relic') && !parallel.name.toLowerCase().includes('auto'))
+                    // console.log('Regular modified parallels: ', modifiedParallels)
+                }
+                const modifiedMap = modifiedParallels.map((p) => ({ name: p.name, norm: normalize(removeSapphire(p.name)), printRun: `/${p.printRun}` }))
+
+                matchedParallel = modifiedMap.findLast(p => normTitle.includes(p.norm))?.name ?? modifiedMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
+            } else {
+                const allMatch = parallelMap.findLast(p => normTitle.includes(p.norm))?.name ?? parallelMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
+                const sapphireMatch = parallelMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
+                matchedParallel = term.includes('Sapphire') || term.includes('Logofractor') ? sapphireMatch : allMatch
+            }
 
             // Get card ID
             const card = await getCardByCriteria(term, driverMatch, cardNumber, token)
@@ -130,7 +152,7 @@ async function runScraper() {
             })
         })
         console.log('Completed for set: ', term, '\n\n')
-        await delay(60000); // 60 seconds between requests
+        await delay(300000); // 5 minutes between requests
     }
 
     fs.writeFileSync(
