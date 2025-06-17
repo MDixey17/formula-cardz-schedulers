@@ -7,6 +7,10 @@ const removeSapphire = (parallelName) => {
     const words = parallelName.split(' ')
     const match = words.findIndex(w => w === 'sapphire')
     if (match === -1) {
+        // Use this for the multicolor parallels
+        if (parallelName.includes('/')) {
+            return parallelName.replace('/', ' ')
+        }
         return parallelName
     }
 
@@ -56,9 +60,13 @@ const checkChromeVariants = (setName, title) => {
         return false
     }
 
+    // Case 3: F1 in name instead of Formula 1
+    const modifiedSetName = setName.replace('formula 1', 'f1')
+    if (title.includes(modifiedSetName)) {
+        return true
+    }
 
     // Default: Assume false as we can't get enough info from the title
-    // Can delete, but keep in place in case needed after thorough testing
     return false
 }
 

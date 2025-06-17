@@ -7,9 +7,9 @@ const getSetsDropdown = async () => {
 }
 
 const getPossibleParallels = async (setName) => {
-    const response = await axiosService.get(`/v1/dropdown/parallels/${setName}`)
+    const response = await axiosService.get(`/v1/parallels/${setName}`)
 
-    return response.data
+    return response.data.parallels
 }
 
 const getPossibleDrivers = async (setName) => {

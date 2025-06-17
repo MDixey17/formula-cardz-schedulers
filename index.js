@@ -42,7 +42,7 @@ async function runScraper() {
         const possibleDrivers = await getPossibleDrivers(term)
 
         // Get normalized values
-        const parallelMap = possibleParallels.map((p) => ({ name: p.label, norm: normalize(removeSapphire(p.label)) }))
+        const parallelMap = possibleParallels.map((p) => ({ name: p.name, norm: normalize(removeSapphire(p.name)), printRun: `/${p.printRun}` }))
         const driverMap = possibleDrivers.map((p) => ({ name: p.label, norm: normalize(p.label) }))
 
         const results = await scrapeSoldItems(term);
@@ -57,7 +57,7 @@ async function runScraper() {
             console.log('No results found.')
             return
         }
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 15; i++) {
             const result = results[i];
             const {title, price, date} = result
             console.log(`\nStarting ${i + 1}`)
@@ -92,7 +92,7 @@ async function runScraper() {
             }
 
             // Check for a parallel
-            const matchedParallel = parallelMap.find(p => normTitle.includes(p.norm))?.name ?? 'Base'
+            const matchedParallel = parallelMap.findLast(p => normTitle.includes(p.norm))?.name ?? parallelMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
 
             // Get card ID
             const card = await getCardByCriteria(term, driverMatch, cardNumber, token)
