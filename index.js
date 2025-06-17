@@ -19,10 +19,10 @@ async function runScraper() {
     console.log('Token retrieved!')
 
     console.log('Fetching sets dropdown to get sales for...')
-    // const sets = await getSetsDropdown()
+    // const sets = await getSetsDropdown() -- FILTER DYNASTY,ECCELLENZA,LIGHTS OUT
     const sets = [ {
-        label: '2023 Topps Chrome Sapphire Formula 1',
-        value: '2023 Topps Chrome Sapphire Formula 1'
+        label: '2024 Topps Chrome Logofractor Formula 1',
+        value: '2024 Topps Chrome Logofractor Formula 1'
     } ]
     const SEARCH_TERMS = sets.map((set) => set.label)
     console.log('Sets retrieved!')
@@ -46,13 +46,6 @@ async function runScraper() {
         const driverMap = possibleDrivers.map((p) => ({ name: p.label, norm: normalize(p.label) }))
 
         const results = await scrapeSoldItems(term);
-
-        console.log(parallelMap)
-
-        // fs.writeFileSync(
-        //     path.join(__dirname, `${term}-results-${timestamp}.json`),
-        //     JSON.stringify(results, null, 2)
-        // );
 
         // for (const result of results) {
         if (results.length === 0) {
@@ -96,7 +89,7 @@ async function runScraper() {
             // Check for a parallel
             const allMatch = parallelMap.findLast(p => normTitle.includes(p.norm))?.name ?? parallelMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
             const sapphireMatch = parallelMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
-            const matchedParallel = term.includes('Sapphire') ? sapphireMatch : allMatch
+            const matchedParallel = term.includes('Sapphire') || term.includes('Logofractor') ? sapphireMatch : allMatch
 
             // Get card ID
             const card = await getCardByCriteria(term, driverMatch, cardNumber, token)
@@ -137,7 +130,7 @@ async function runScraper() {
             })
         })
         console.log('Completed for set: ', term, '\n\n')
-        await delay(10000); // 10 seconds between requests
+        await delay(60000); // 60 seconds between requests
     }
 
     fs.writeFileSync(
