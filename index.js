@@ -5,7 +5,7 @@ const path = require("path");
 const dayjs = require("dayjs");
 const {login} = require("./services/authService");
 const {getSetsDropdown, getPossibleParallels, getPossibleDrivers} = require("./services/dropdownService");
-const {normalize, removeSapphire, checkChromeVariants} = require("./utils/utils");
+const {normalize, removeSapphire, checkChromeVariants, checkImageVariation} = require("./utils/utils");
 const {getCardByCriteria} = require("./services/cardService");
 const env = require("dotenv").config();
 
@@ -21,8 +21,8 @@ async function runScraper() {
     console.log('Fetching sets dropdown to get sales for...')
     // const sets = await getSetsDropdown() -- FILTER DYNASTY,ECCELLENZA,LIGHTS OUT
     const sets = [ {
-        label: '2024 Topps Finest Formula 1',
-        value: '2024 Topps Finest Formula 1'
+        label: '2024 Topps Paddock Pass Formula 1',
+        value: '2024 Topps Paddock Pass Formula 1'
     } ]
     const SEARCH_TERMS = sets.map((set) => set.label)
     console.log('Sets retrieved!')
@@ -71,7 +71,7 @@ async function runScraper() {
 
             // Get the card number
             const cardNumberMatch = title.match(/#([A-Z0-9-]+)/)
-            const cardNumber = cardNumberMatch ? cardNumberMatch[1] : undefined
+            let cardNumber = cardNumberMatch ? cardNumberMatch[1] : undefined
             if (cardNumber === undefined) {
                 // Skip
                 console.log('Failed to find card number, skipping...')
@@ -84,6 +84,24 @@ async function runScraper() {
                 // Skip
                 console.log('Failed to find driver match, skipping...')
                 continue
+            }
+
+            // Check if the card is an image variation
+            const isImageVariation = checkImageVariation(title, cardNumber, driverMatch)
+            if (isImageVariation) {
+                console.log('Found an image variation!')
+                cardNumber = `${cardNumber}a`
+            }
+
+            // SPECIAL CASE: Paddock Pass cards are marked 'a' or 'b' for the first 20 cards
+            if (term.toLowerCase().includes('paddock pass')) {
+                const isNumber = /^\d+$/.test(isImageVariation ? cardNumber.substring(0, cardNumber.length - 1) : cardNumber)
+                if (isNumber) {
+                    const number = parseInt(cardNumber)
+                    if (number <= 20) {
+                        cardNumber = isImageVariation ? cardNumber.replace('a', 'b') : `${cardNumber}a`
+                    }
+                }
             }
 
             // Check for a parallel

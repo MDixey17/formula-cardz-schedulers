@@ -70,8 +70,25 @@ const checkChromeVariants = (setName, title) => {
     return false
 }
 
+const checkImageVariation = (title, foundCardNumber, foundDriver) => {
+    // Check if title contains something about a variation
+    const lowercaseTitle = title.toLowerCase()
+    if ((lowercaseTitle.includes('image variation')
+        || lowercaseTitle.includes('variation')
+        || lowercaseTitle.includes('iv')) && !foundDriver.toLowerCase().includes('iv')) {
+
+        // This is an image variation
+        // Return opposite of if the found card number already includes the variation character 'a'
+        return /^\d+$/.test(foundCardNumber)
+    }
+
+    // Default: false as this is not an image variation
+    return false
+}
+
 module.exports = {
     normalize,
     removeSapphire,
-    checkChromeVariants
+    checkChromeVariants,
+    checkImageVariation
 }
