@@ -21,8 +21,8 @@ async function runScraper() {
     console.log('Fetching sets dropdown to get sales for...')
     // const sets = await getSetsDropdown()
     const sets = [ {
-        label: '2023 Topps Chrome Formula 1',
-        value: '2023 Topps Chrome Formula 1'
+        label: '2023 Topps Chrome Sapphire Formula 1',
+        value: '2023 Topps Chrome Sapphire Formula 1'
     } ]
     const SEARCH_TERMS = sets.map((set) => set.label)
     console.log('Sets retrieved!')
@@ -46,6 +46,8 @@ async function runScraper() {
         const driverMap = possibleDrivers.map((p) => ({ name: p.label, norm: normalize(p.label) }))
 
         const results = await scrapeSoldItems(term);
+
+        console.log(parallelMap)
 
         // fs.writeFileSync(
         //     path.join(__dirname, `${term}-results-${timestamp}.json`),
@@ -92,7 +94,9 @@ async function runScraper() {
             }
 
             // Check for a parallel
-            const matchedParallel = parallelMap.findLast(p => normTitle.includes(p.norm))?.name ?? parallelMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
+            const allMatch = parallelMap.findLast(p => normTitle.includes(p.norm))?.name ?? parallelMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
+            const sapphireMatch = parallelMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
+            const matchedParallel = term.includes('Sapphire') ? sapphireMatch : allMatch
 
             // Get card ID
             const card = await getCardByCriteria(term, driverMatch, cardNumber, token)
