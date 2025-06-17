@@ -30,7 +30,7 @@ const removeSapphire = (parallelName) => {
  * @param setName   Name of the set currently getting sale data for
  * @param title     Title of the eBay sale found
  */
-const checkChromeVariants = (setName, title) => {
+const checkSetName = (setName, title) => {
     // Base case
     if (title.includes(setName)) {
         return true
@@ -86,9 +86,14 @@ const checkImageVariation = (title, foundCardNumber, foundDriver) => {
     return false
 }
 
+const delay = (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 module.exports = {
     normalize,
     removeSapphire,
-    checkChromeVariants,
-    checkImageVariation
+    checkSetName,
+    checkImageVariation,
+    delay,
 }
