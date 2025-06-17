@@ -137,3 +137,6 @@ dist
 
 # Jetbrains IDE
 .idea/
+
+# Personal
+archive/
