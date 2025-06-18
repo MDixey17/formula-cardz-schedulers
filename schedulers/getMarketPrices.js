@@ -4,6 +4,7 @@ const dayjs = require("dayjs");
 const {scrapeSoldItems} = require("../scraper");
 const {delay, normalize, removeSapphire, checkSetName, checkImageVariation} = require("../utils/utils");
 const {getCardByCriteria} = require("../services/cardService");
+const {addMarketPrice} = require("../services/marketService");
 
 const runScraper = async (searchTerm) => {
     const results = await scrapeSoldItems(searchTerm);
@@ -152,10 +153,31 @@ const getRecentEbaySales = async () => {
                 salesGrouped.get(key).prices.push(price)
                 console.log(`Completed processing for ${title}!\n`)
             }
-            // TODO: Push all sales via PUT request
+            // Push all sales via PUT request
+            for (const [key, {prices, timestamp, source, parallel}] of salesGrouped) {
+                const cardId = key.split('|')[0]
+                const lowestPrice = Math.min(...prices)
+                const highestPrice = Math.max(...prices)
+                const averagePrice = +(prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2)
+                let requestBody = {
+                    cardId,
+                    timestamp,
+                    source,
+                    lowestPrice,
+                    averagePrice,
+                    highestPrice,
+                }
+
+                if (parallel !== undefined && parallel !== null && parallel !== 'Base') {
+                    requestBody.parallel = parallel
+                }
+
+                await addMarketPrice(requestBody, token)
+                console.log(`Added market price for card with ID ${cardId}`)
+            }
             console.log(`Successfully iterated through data for ${setName}! Sleeping for 5 minutes before next set...`)
+            i++
         }
-        i++
         await delay(300000)
     }
 

@@ -19,10 +19,9 @@ async function scrapeSoldItems(searchTerm) {
             const title = item.querySelector(".s-item__title")?.textContent;
             const price = item.querySelector(".s-item__price")?.textContent;
             const date = item.querySelector(".s-item__caption--signal")?.textContent.substring(5);
-            const url = item.querySelector("a.s-item__link")?.href;
 
-            if (title && price && url && title !== 'Shop on eBay') {
-                results.push({ title, price, date, url });
+            if (title && price && date && title !== 'Shop on eBay') {
+                results.push({ title, price: parseFloat(price.replace(/[^\d.]/g, '')), date });
             }
         });
 
