@@ -2,7 +2,7 @@ const {login} = require("../services/authService");
 const {getSetsDropdown, getPossibleParallels, getPossibleDrivers} = require("../services/dropdownService");
 const dayjs = require("dayjs");
 const {scrapeSoldItems} = require("../scraper");
-const {delay, normalize, removeSapphire, checkSetName, checkImageVariation, isPreviousDay} = require("../utils/utils");
+const {delay, normalize, removeSapphire, checkSetName, checkImageVariation, isPreviousDay, removeDiacritics} = require("../utils/utils");
 const {getCardByCriteria} = require("../services/cardService");
 const {addMarketPrice} = require("../services/marketService");
 
@@ -81,12 +81,13 @@ const getRecentEbaySales = async () => {
                 }
 
                 // Get the driver name
-                const driverMatch = driverMap.find(driver => normTitle.includes(driver.norm))?.name
-                if (driverMatch === undefined) {
+                const driverName = driverMap.find(driver => normTitle.includes(driver.norm))?.name
+                if (driverName === undefined) {
                     // Skip
                     console.log('Failed to find driver match, skipping...\n')
                     continue
                 }
+                const driverMatch = removeDiacritics(driverName)
 
                 // Check if the card is an image variation
                 const isImageVariation = checkImageVariation(title, cardNumber, driverMatch)

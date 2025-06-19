@@ -3,9 +3,9 @@ const {getRecentEbaySales} = require("./schedulers/getMarketPrices");
 const {createDailyCardBattle} = require("./schedulers/dailyCardBattle");
 const env = require("dotenv").config();
 
-// Cron: Every day at 1am
+// Cron: Every day at 4am
 // 0 1 * * *
-cron.schedule("0 1 * * *", () => {
+cron.schedule("0 4 * * *", () => {
     getRecentEbaySales();
 });
 
@@ -14,5 +14,3 @@ cron.schedule("0 1 * * *", () => {
 cron.schedule("0 0 * * *", () => {
     createDailyCardBattle();
 })
-
-// getRecentEbaySales()

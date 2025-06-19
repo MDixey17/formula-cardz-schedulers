@@ -108,11 +108,16 @@ const isPreviousDay = (dateString) => {
     )
 }
 
+const removeDiacritics = (str) => {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 module.exports = {
     normalize,
     removeSapphire,
     checkSetName,
     checkImageVariation,
     delay,
-    isPreviousDay
+    isPreviousDay,
+    removeDiacritics,
 }
