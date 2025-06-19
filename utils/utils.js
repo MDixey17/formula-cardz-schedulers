@@ -75,7 +75,7 @@ const checkImageVariation = (title, foundCardNumber, foundDriver) => {
     const lowercaseTitle = title.toLowerCase()
     if ((lowercaseTitle.includes('image variation')
         || lowercaseTitle.includes('variation')
-        || lowercaseTitle.includes('iv')) && !foundDriver.toLowerCase().includes('iv')) {
+        || lowercaseTitle.includes('iv')) && !foundDriver.toLowerCase().includes('iv') && !lowercaseTitle.includes('drive')) {
 
         // This is an image variation
         // Return opposite of if the found card number already includes the variation character 'a'
@@ -90,10 +90,29 @@ const delay = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+const isPreviousDay = (dateString) => {
+    // Parse YYYY-MM-DD as local date (not UTC!)
+    const [year, month, day] = dateString.split("-").map(Number);
+    const inputDate = new Date(year, month - 1, day); // Local midnight
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    // Check if inputDate is exactly yesterday
+    return (
+        inputDate.getFullYear() === yesterday.getFullYear() &&
+        inputDate.getMonth() === yesterday.getMonth() &&
+        inputDate.getDate() === yesterday.getDate()
+    )
+}
+
 module.exports = {
     normalize,
     removeSapphire,
     checkSetName,
     checkImageVariation,
     delay,
+    isPreviousDay
 }

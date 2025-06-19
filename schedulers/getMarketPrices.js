@@ -2,7 +2,7 @@ const {login} = require("../services/authService");
 const {getSetsDropdown, getPossibleParallels, getPossibleDrivers} = require("../services/dropdownService");
 const dayjs = require("dayjs");
 const {scrapeSoldItems} = require("../scraper");
-const {delay, normalize, removeSapphire, checkSetName, checkImageVariation} = require("../utils/utils");
+const {delay, normalize, removeSapphire, checkSetName, checkImageVariation, isPreviousDay} = require("../utils/utils");
 const {getCardByCriteria} = require("../services/cardService");
 const {addMarketPrice} = require("../services/marketService");
 
@@ -52,9 +52,16 @@ const getRecentEbaySales = async () => {
             for (let j = 0; j < results.length; j++) {
                 const sale = results[j]
                 const { title, price, date } = sale
-                console.log(`Processing ${title}...`)
 
                 const dateIso = new Date(date).toISOString().split("T")[0];
+                console.log(`Processing ${title} on ${dateIso}...`)
+
+                // Check if this sale is already in the database before processing
+                if (!isPreviousDay(dateIso)) {
+                    console.log('Sale has already been processed. Skipping...')
+                    continue
+                }
+
                 const normTitle = normalize(title)
 
                 // Check against the set name of the listing

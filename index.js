@@ -5,7 +5,7 @@ const env = require("dotenv").config();
 
 // Cron: Every day at 1am
 // 0 1 * * *
-cron.schedule("56 * * * *", () => {
+cron.schedule("0 1 * * *", () => {
     getRecentEbaySales();
 });
 
@@ -14,3 +14,5 @@ cron.schedule("56 * * * *", () => {
 cron.schedule("0 0 * * *", () => {
     createDailyCardBattle();
 })
+
+// getRecentEbaySales()
