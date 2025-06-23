@@ -2,7 +2,12 @@ const puppeteer = require("puppeteer");
 const dayjs = require("dayjs");
 
 async function scrapeSoldItems(searchTerm) {
-    const browser = await puppeteer.launch({ headless: "new" });
+    const browser = await puppeteer.launch({
+        executablePath: process.env.NODE_ENV === "production"
+            ? process.env.PUPPETEER_EXECUTABLE_PATH
+            : puppeteer.executablePath(),
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
+    });
     const page = await browser.newPage();
 
     // Replace spaces with "+" for the query
