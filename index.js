@@ -5,7 +5,7 @@ const env = require("dotenv").config();
 
 // Cron: Every day at 2am - offset for server location
 // 0 2 * * *
-cron.schedule("0 18 * * *", () => {
+cron.schedule("0 19 * * *", () => {
     getRecentEbaySales();
 });
 
