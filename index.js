@@ -1,6 +1,7 @@
 const cron = require("node-cron");
 const {getRecentEbaySales} = require("./schedulers/getMarketPrices");
 const {createDailyCardBattle} = require("./schedulers/dailyCardBattle");
+const {runHealthCheck} = require("./schedulers/health");
 const env = require("dotenv").config();
 
 // Cron: Every day at 2am - offset for UTC
@@ -13,4 +14,8 @@ cron.schedule("0 7 * * *", () => {
 // 0 5 * * *
 cron.schedule("0 5 * * *", () => {
     createDailyCardBattle();
+})
+
+cron.schedule("*/5 * * * *", () => {
+    runHealthCheck()
 })
