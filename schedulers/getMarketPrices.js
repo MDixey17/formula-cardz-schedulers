@@ -2,7 +2,9 @@ const {login} = require("../services/authService");
 const {getSetsDropdown, getPossibleParallels, getPossibleDrivers} = require("../services/dropdownService");
 const dayjs = require("dayjs");
 const {scrapeSoldItems} = require("../scraper");
-const {delay, normalize, removeSapphire, checkSetName, checkImageVariation, isPreviousDay, removeDiacritics} = require("../utils/utils");
+const {delay, normalize, removeSapphire, checkSetName, checkImageVariation, isPreviousDay, removeDiacritics,
+    checkForMultiColorParallel
+} = require("../utils/utils");
 const {getCardByCriteria} = require("../services/cardService");
 const {addMarketPrice} = require("../services/marketService");
 
@@ -129,7 +131,7 @@ const getRecentEbaySales = async () => {
 
                     matchedParallel = modifiedMap.findLast(p => normTitle.includes(p.norm))?.name ?? modifiedMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
                 } else {
-                    const allMatch = parallelMap.findLast(p => normTitle.includes(p.norm))?.name ?? parallelMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
+                    const allMatch = checkForMultiColorParallel(title) ?? parallelMap.findLast(p => normTitle.includes(p.norm))?.name ?? parallelMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
                     const sapphireMatch = parallelMap.find(p => title.includes(p.printRun))?.name ?? 'Base'
                     matchedParallel = setName.includes('Sapphire') || setName.includes('Logofractor') ? sapphireMatch : allMatch
                 }

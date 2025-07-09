@@ -7,10 +7,6 @@ const removeSapphire = (parallelName) => {
     const words = parallelName.split(' ')
     const match = words.findIndex(w => w === 'sapphire')
     if (match === -1) {
-        // Use this for the multicolor parallels
-        if (parallelName.includes('/')) {
-            return parallelName.replace('/', ' ')
-        }
         return parallelName
     }
 
@@ -112,6 +108,35 @@ const removeDiacritics = (str) => {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+const checkForMultiColorParallel = (title) => {
+    const MULTI_COLORS = [
+        'Purple/Green Refractor',
+        'Gold/Purple Refractor',
+        'Orange/Red Refractor',
+        'Red/Green Refractor',
+    ]
+
+    const MULTI_COLORS_REVERSE = [
+        'Green/Purple Refractor',
+        'Purple/Gold Refractor',
+        'Red/Orange Refractor',
+        'Green/Red Refractor'
+    ]
+
+    const normalizedTitle = normalize(title)
+
+    for (let i = 0; i < MULTI_COLORS.length; i++) {
+        const normal = normalize(MULTI_COLORS[i])
+        const reverse = normalize(MULTI_COLORS_REVERSE[i])
+
+        if (normalizedTitle.includes(normal) || normalizedTitle.includes(reverse)) {
+            return MULTI_COLORS[i] // Always return the canonical form
+        }
+    }
+
+    return undefined
+}
+
 module.exports = {
     normalize,
     removeSapphire,
@@ -120,4 +145,5 @@ module.exports = {
     delay,
     isPreviousDay,
     removeDiacritics,
+    checkForMultiColorParallel,
 }
