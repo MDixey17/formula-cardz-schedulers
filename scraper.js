@@ -9,6 +9,7 @@ async function scrapeSoldItems(searchTerm) {
             ? process.env.PUPPETEER_EXECUTABLE_PATH
             : puppeteer.executablePath(),
         args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
+        headless: 'new',
     });
     const page = await browser.newPage();
 
@@ -46,13 +47,15 @@ async function getPsaOneOfOneReport(psaUrl, searchTerm) {
             ? process.env.PUPPETEER_EXECUTABLE_PATH
             : puppeteer.executablePath(),
         args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
+        headless: 'new'
     });
     const page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36');
     await page.setViewport({ width: 1280, height: 800 });
 
+    let capturedResponse = null
+
     try {
-        let capturedResponse = null
         page.on('response', async (response) => {
             const req = response.request();
             const url = response.url();
@@ -96,27 +99,25 @@ async function getPsaOneOfOneReport(psaUrl, searchTerm) {
         await page.waitForSelector('input[placeholder="Search"]', { timeout: 10000 });
         await page.type('input[placeholder="Search"]', searchTerm);
 
-        await delay(4000)
+        await delay(10000)
 
         await page.click('button.btn-default');
-
-        await browser.close();
-
-        if (capturedResponse) {
-            return capturedResponse.data.map(item => ({
-                cardNumber: item.Variety.toLowerCase().includes('sp-') || item.Variety.toLowerCase().includes('ssp-') ? `${item.CardNumber}a` : item.CardNumber,
-                driverName: item.SubjectName,
-                parallel: item.Variety
-            }))
-        } else {
-            console.error('❌ Could not capture the data from PSA.');
-        }
-        return [];
     } catch (err) {
         console.error('❌ Error scraping PSA:', err);
     } finally {
         await browser.close();
     }
+
+    if (capturedResponse) {
+        return capturedResponse.data.map(item => ({
+            cardNumber: item.Variety.toLowerCase().includes('sp-') || item.Variety.toLowerCase().includes('ssp-') ? `${item.CardNumber}a` : item.CardNumber,
+            driverName: item.SubjectName,
+            parallel: item.Variety
+        }))
+    } else {
+        console.error('❌ Could not capture the data from PSA.');
+    }
+    return [];
 }
 
 module.exports = { scrapeSoldItems, getPsaOneOfOneReport };
