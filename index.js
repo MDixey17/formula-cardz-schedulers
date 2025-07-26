@@ -3,6 +3,7 @@ const {getRecentEbaySales} = require("./schedulers/getMarketPrices");
 const {createDailyCardBattle} = require("./schedulers/dailyCardBattle");
 const {runHealthCheck} = require("./schedulers/health");
 const {getRecentEbaySalesForHighEndSets} = require("./schedulers/getMarketPricesForHighEndSets");
+const {getAllOneOfOnes} = require("./schedulers/getAllOneOfOnes");
 const env = require("dotenv").config();
 
 // Cron: Every day at 2am - offset for UTC
@@ -27,4 +28,10 @@ cron.schedule("*/5 * * * *", () => {
 // 0 17 * * *
 cron.schedule("0 17 * * *", () => {
     getRecentEbaySalesForHighEndSets()
+})
+
+// Cron: Every day at 4pm CST - offset for UTC
+// 0 21 * * *
+cron.schedule("0 21 * * *", () => {
+    getAllOneOfOnes()
 })

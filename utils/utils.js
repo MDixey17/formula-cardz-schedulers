@@ -137,6 +137,14 @@ const checkForMultiColorParallel = (title) => {
     return undefined
 }
 
+const insertDashAt = (str, index) => {
+    if (index < 0 || index > str.length) {
+        return str
+    }
+
+    return str.slice(0, index) + '-' + str.slice(index)
+}
+
 module.exports = {
     normalize,
     removeSapphire,
@@ -146,4 +154,5 @@ module.exports = {
     isPreviousDay,
     removeDiacritics,
     checkForMultiColorParallel,
+    insertDashAt
 }

@@ -1,5 +1,7 @@
-const puppeteer = require("puppeteer");
-const dayjs = require("dayjs");
+const puppeteer = require("puppeteer-extra");
+const {delay} = require("./utils/utils");
+const StealthPlugin = require('puppeteer-extra-plugin-stealth')
+const fs = require('fs')
 
 async function scrapeSoldItems(searchTerm) {
     const browser = await puppeteer.launch({
@@ -37,4 +39,84 @@ async function scrapeSoldItems(searchTerm) {
     return items;
 }
 
-module.exports = { scrapeSoldItems };
+async function getPsaOneOfOneReport(psaUrl, searchTerm) {
+    puppeteer.use(StealthPlugin())
+    const browser = await puppeteer.launch({
+        executablePath: process.env.NODE_ENV === "production"
+            ? process.env.PUPPETEER_EXECUTABLE_PATH
+            : puppeteer.executablePath(),
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
+    });
+    const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36');
+    await page.setViewport({ width: 1280, height: 800 });
+
+    try {
+        let capturedResponse = null
+        page.on('response', async (response) => {
+            const req = response.request();
+            const url = response.url();
+            const postData = req.postData();
+            const params = new URLSearchParams(postData);
+            const searchValue = params.get("search")
+
+            // Uncomment for debugging
+            // if (url.includes('/Pop/GetSetItems')) {
+            //     console.log(`Status: ${response.status()}`);
+            //     console.log(`Content-Type: ${response.headers()['content-type']}`)
+            //     console.log(`Post Data: ${req.postData()}`)
+            //     console.log(`Search Value: ${searchValue}`)
+            //     console.log(`Search Term: ${searchTerm}`)
+            // }
+
+            if (
+                url.includes('/Pop/GetSetItems') &&
+                req.method() === 'POST' &&
+                searchValue && searchValue.toLowerCase() === searchTerm.toLowerCase()
+            ) {
+                try {
+                    const status = response.status();
+                    const contentType = response.headers()['content-type'];
+
+                    if (status === 200 && contentType.includes('application/json')) {
+                        const json = await response.json();
+                        capturedResponse = json;
+                    } else {
+                        const text = await response.text();
+                        console.error('⚠️ Received non-JSON response:', text.substring(0, 300));
+                    }
+                } catch (err) {
+                    console.error('❌ Error reading response:', err);
+                }
+            }
+        });
+
+        await page.goto(psaUrl, { waitUntil: 'networkidle2', timeout: 60000 });
+
+        await page.waitForSelector('input[placeholder="Search"]', { timeout: 10000 });
+        await page.type('input[placeholder="Search"]', searchTerm);
+
+        await delay(4000)
+
+        await page.click('button.btn-default');
+
+        await browser.close();
+
+        if (capturedResponse) {
+            return capturedResponse.data.map(item => ({
+                cardNumber: item.Variety.toLowerCase().includes('sp-') || item.Variety.toLowerCase().includes('ssp-') ? `${item.CardNumber}a` : item.CardNumber,
+                driverName: item.SubjectName,
+                parallel: item.Variety
+            }))
+        } else {
+            console.error('❌ Could not capture the data from PSA.');
+        }
+        return [];
+    } catch (err) {
+        console.error('❌ Error scraping PSA:', err);
+    } finally {
+        await browser.close();
+    }
+}
+
+module.exports = { scrapeSoldItems, getPsaOneOfOneReport };
