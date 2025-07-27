@@ -12,10 +12,10 @@ async function scrapeSoldItems(searchTerm) {
         headless: 'new',
     });
 
-    const [page] = await Promise.all([
-        new Promise(resolve => browser.once('targetcreated', target => resolve(target.page()))),
-        browser.newPage()
-    ]);
+    // Give 10 seconds for the window to start up correctly
+    await delay(10000)
+
+    const page = await browser.newPage();
 
     // Replace spaces with "+" for the query
     const query = encodeURIComponent(searchTerm);
