@@ -30,8 +30,14 @@ cron.schedule("0 17 * * *", () => {
     getRecentEbaySalesForHighEndSets()
 })
 
-// Cron: Every day at 4pm CST - offset for UTC
-// 0 21 * * *
-cron.schedule("0 19 * * *", () => {
-    getAllOneOfOnes()
-})
+// Cron: Locally at least once per week
+/**
+ * There is an issue with scraping the PSA website in a cloud environment where it is very inconsistent with
+ * getting population report data. After hours of troubleshooting, I have found that it is best to manage locally
+ * as there were no issues with that.
+ *
+ * I will continue the search for a solution to see if full automation is possible.
+ */
+// cron.schedule("0 19 * * *", () => {
+//     getAllOneOfOnes()
+// })
