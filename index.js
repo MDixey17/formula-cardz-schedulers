@@ -8,7 +8,7 @@ const env = require("dotenv").config();
 
 // Cron: Every day at 2am - offset for UTC
 // 0 7 * * *
-cron.schedule("23 18 * * *", () => {
+cron.schedule("0 7 * * *", () => {
     getRecentEbaySales();
 });
 
@@ -32,6 +32,6 @@ cron.schedule("0 17 * * *", () => {
 
 // Cron: Every day at 4pm CST - offset for UTC
 // 0 21 * * *
-cron.schedule("0 21 * * *", () => {
+cron.schedule("0 19 * * *", () => {
     getAllOneOfOnes()
 })

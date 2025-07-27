@@ -1,7 +1,6 @@
 const puppeteer = require("puppeteer-extra");
 const {delay} = require("./utils/utils");
 const StealthPlugin = require('puppeteer-extra-plugin-stealth')
-const fs = require('fs')
 
 async function scrapeSoldItems(searchTerm) {
     const browser = await puppeteer.launch({
@@ -9,37 +8,25 @@ async function scrapeSoldItems(searchTerm) {
             ? process.env.PUPPETEER_EXECUTABLE_PATH
             : puppeteer.executablePath(),
         args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
-        headless: 'new',
     });
-
-    // Give 10 seconds for the window to start up correctly
-    await delay(10000)
-
     const page = await browser.newPage();
-
     // Replace spaces with "+" for the query
     const query = encodeURIComponent(searchTerm);
     const url = `https://www.ebay.com/sch/i.html?_nkw=${query}&LH_Sold=1&LH_Complete=1&_ipg=240`;
-
     await page.goto(url, { waitUntil: "networkidle2" });
-
     const items = await page.evaluate(() => {
         const itemElements = document.querySelectorAll(".s-item");
         const results = [];
-
         itemElements.forEach((item) => {
             const title = item.querySelector(".s-item__title")?.textContent;
             const price = item.querySelector(".s-item__price")?.textContent;
             const date = item.querySelector(".s-item__caption--signal")?.textContent.substring(5);
-
             if (title && price && date && title !== 'Shop on eBay') {
                 results.push({ title, price: parseFloat(price.replace(/[^\d.]/g, '')), date });
             }
         });
-
         return results;
     });
-
     await browser.close();
     return items;
 }
@@ -50,21 +37,27 @@ async function getPsaOneOfOneReport(psaUrl, searchTerm) {
         executablePath: process.env.NODE_ENV === "production"
             ? process.env.PUPPETEER_EXECUTABLE_PATH
             : puppeteer.executablePath(),
-        args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
-        headless: 'new'
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-extensions',
+            '--disable-gpu',
+            '--window-size=1920,1080'
+        ],
     });
-
-    // Give 10 seconds for the window to start up correctly
-    await delay(10000)
 
     const page = await browser.newPage();
 
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36');
-    await page.setViewport({ width: 1280, height: 800 });
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64)' +
+        ' AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36');
 
     let capturedResponse = null
 
     try {
+        await page.goto(psaUrl, { waitUntil: 'networkidle2', timeout: 60000 });
+        await delay(10000)
+
         page.on('response', async (response) => {
             const req = response.request();
             const url = response.url();
@@ -103,14 +96,10 @@ async function getPsaOneOfOneReport(psaUrl, searchTerm) {
             }
         });
 
-        await page.goto(psaUrl, { waitUntil: 'networkidle2', timeout: 60000 });
-
         await page.waitForSelector('input[placeholder="Search"]', { timeout: 10000 });
-        await page.type('input[placeholder="Search"]', searchTerm);
+        await page.type('input[placeholder="Search"]', searchTerm, { delay: 100 });
 
         await delay(10000)
-
-        await page.click('button.btn-default');
     } catch (err) {
         console.error('❌ Error scraping PSA:', err);
     } finally {
