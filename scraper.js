@@ -11,7 +11,11 @@ async function scrapeSoldItems(searchTerm) {
         args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
         headless: 'new',
     });
-    const page = await browser.newPage();
+
+    const [page] = await Promise.all([
+        new Promise(resolve => browser.once('targetcreated', target => resolve(target.page()))),
+        browser.newPage()
+    ]);
 
     // Replace spaces with "+" for the query
     const query = encodeURIComponent(searchTerm);
@@ -49,7 +53,12 @@ async function getPsaOneOfOneReport(psaUrl, searchTerm) {
         args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
         headless: 'new'
     });
-    const page = await browser.newPage();
+
+    const [page] = await Promise.all([
+        new Promise(resolve => browser.once('targetcreated', target => resolve(target.page()))),
+        browser.newPage()
+    ]);
+
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36');
     await page.setViewport({ width: 1280, height: 800 });
 
