@@ -54,10 +54,10 @@ async function getPsaOneOfOneReport(psaUrl, searchTerm) {
         headless: 'new'
     });
 
-    const [page] = await Promise.all([
-        new Promise(resolve => browser.once('targetcreated', target => resolve(target.page()))),
-        browser.newPage()
-    ]);
+    // Give 10 seconds for the window to start up correctly
+    await delay(10000)
+
+    const page = await browser.newPage();
 
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36');
     await page.setViewport({ width: 1280, height: 800 });
